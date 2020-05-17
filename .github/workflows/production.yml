@@ -1,0 +1,30 @@
+name: production
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  production:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: build
+        run: . ./build.sh production
+
+      - name: checkout branch for publish
+        run: git checkout -b production-public
+
+      - name: Commit files
+        run: |
+          echo ${{ github.ref }}
+          git add public
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -m "ci: Automated build push" | exit 0
+      - name: push
+        run: git push "https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git" --follow-tags -f | exit 0
